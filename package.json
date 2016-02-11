@@ -1,0 +1,32 @@
+{
+  "name": "vsphere-doc-scrape",
+  "version": "0.0.1",
+  "description": "vSphere API doc scraper",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhoriuchi/vsphere-doc-scrape.git"
+  },
+  "keywords": [
+    "vsphere"
+  ],
+  "author": "Branden Horiuchi <bhoriuchi@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/bhoriuchi/vsphere-doc-scrape",
+  "bugs": {
+    "url": "https://github.com/bhoriuchi/vsphere-doc-scrape/issues"
+  },
+  "devDependencies": {
+
+  },
+  "dependencies": {
+  	"lodash": "^4.3.0",
+    "bluebird": "^3.2.2",
+	"cheerio": "^0.20.0"
+  },
+  "scripts": {
+    "test": "echo \\\"Error: no test specified\\\" && exit 1"
+  },
+  "directories": {
+    "example": "example"
+  }
+}
