@@ -1,4 +1,4 @@
-lib/docs/*
+/docs/*
 node_modules
 .DS_Store
 credentials.js

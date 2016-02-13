@@ -21,15 +21,24 @@ function getDoc(doc, base, _self) {
 				if (idx > 0) {
 					
 					var pName = '';
+					var required = true;
 					
 					$(row).find('td').each(function(idx, col) {
-						var colText = $(col).text().trim().replace(/[^A-Za-z0-9:_]/g, '');
+						var colText = $(col).text().trim().split(' ')[0].trim();
+						
+						if (colText.match(/\*/) && idx === 0) {
+							required = false;
+						}
+						colText = colText.replace(/[^A-Za-z0-9:_]/g, '');
 
 						if (idx === 0) {
 							pName = colText;
 						}
 						else if (idx === 1) {
-							_self.schema[name].methods[mName].params[pName] = colText;
+							_self.schema[name].methods[mName].params[pName] = {
+								type: colText,
+								required: required
+							};
 						}
 					});
 				}
@@ -103,8 +112,15 @@ function getDoc(doc, base, _self) {
 									_self.schema[name]._deps = _self.schema[name]._deps || {};
 									_self.schema[name]._deps.deps = _self.schema[name]._deps.deps || {};
 									
-									_self.schema[name].properties[prop] = '_self.' + objName;
-									_self.schema[name]._deps.deps[prop] = objName;
+									if (name !== objName) {
+										_self.schema[name].properties[prop] = '$.' + objName + '()';
+										_self.schema[name]._deps.deps[prop] = objName;	
+									}
+									else {
+										_self.schema[name].properties[prop] = '$.Circular()';
+										_self.schema[name]._deps.deps[prop] = objName;	
+									}
+									
 								}
 								else {
 									_self.schema[name].properties = _self.schema[name].properties || {};
@@ -139,6 +155,47 @@ function getDoc(doc, base, _self) {
 						
 						var mTable = $(method).nextAll('table').first();
 						var mType  = $(mTable).prev('p').text().trim();
+						var deprecated;
+						
+						if ($(method).next().text().match(/Deprecated/i)) {
+							deprecated = $(method).next();
+						}
+						else if ($(method).next().next().text().match(/Deprecated/i)) {
+							deprecated = $(method).next().next();
+						}
+						
+						if (deprecated) {
+
+							var depmsg = $(deprecated).next().text();
+							
+							if (depmsg.match(/As of/i) && depmsg.match(/use/i)) {
+								
+								var depAlt = depmsg.match(/use.*([A-Za-z0-9_]+)\./igm);
+
+								if (depAlt) {
+									var alternate = depAlt[0].replace(/use/i, '').replace('.', '').trim();
+									
+									if (!alternate.match(/\s+/gm)) {
+										_self.schema[name].methods[mName].deprecated = alternate;
+									}
+									else {
+										_self.schema[name].methods[mName].deprecated = true;
+									}
+									
+								}
+								else {
+									_self.schema[name].methods[mName].deprecated = true;
+								}
+							}
+							else {
+								_self.schema[name].methods[mName].deprecated = true;
+							}
+							
+							if (_self.schema[name].methods[mName].deprecated) {
+								console.log(name, mName, 'is deprecated use', _self.schema[name].methods[mName].deprecated);
+							}
+						}
+						
 						
 						if (mType === 'Parameters') {
 							getParams(mTable, _self, name, mName);
